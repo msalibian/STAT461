@@ -1,0 +1,21 @@
+---
+title: "Bootstrap 1"
+date: "`r format(Sys.Date())`"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Bootstrap 1
+
+## A few examples
+
+This generates a sample, and print 1 over the mean
+```{r ex1}
+n <- 20
+set.seed(123)
+x <- rexp(n, rate=2)
+1/mean(x)
+```
