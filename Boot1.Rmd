@@ -5,7 +5,7 @@ output: github_document
 ---
 
 
-<!-- notedown --nomagic Boot1.Rmd > Boot1.ipyn -->
+<!-- notedown --nomagic Boot1.Rmd > Boot1.ipynb -->
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
