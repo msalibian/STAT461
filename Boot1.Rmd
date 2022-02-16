@@ -47,7 +47,7 @@ A natural estimator is
 ```{r ex1.1}
 ( t0 <- sqrt(mean(x)) )
 ```
-We now use simulation to approximate the  boo{tstrap estimator
+We now use simulation to approximate the  bootstrap estimator
 of the distribution of $\sqrt{ \bar{X}_n}$. 
 ```{r ex1.2}
 M <- 5000
@@ -59,7 +59,7 @@ for(j in 1:M) {
 }
 lo0 <- t0 - quantile(rho - t0, .975)
 up0 <- t0 - quantile(rho - t0, .025)
-c(lo=lo0, up=up0)
+as.numeric(c(lo=lo0, up=up0))
 # 
 # lo0 <- t0 - (quantile(rho - t0, .975) - t0)
 # up0 <- t0 - (quantile(rho - t0, .025) - t0)
@@ -75,9 +75,96 @@ We can compare it with the previous one
       c(lo=lo1, up=up1)) )
 ```
 
+### Example 2 - Estimate the expected value of the square root 
+
+In this example, we have a sample $X_1, \ldots, X_n$ and are
+interested in $\theta = E_F[ \sqrt{X} ]$. 
+
+Because we simulate these observations, we will have 
+$X_i \sim \chi^2_1$, and thus $\sqrt{X} \sim |Z|$
+where $Z \sim {\cal N}(0,1)$. We  have
+$\theta = E[ |Z| ] = \sqrt{2/pi} = 0.7978846$. 
+
+First generate a sample
+```{r ex2}
+set.seed(123)
+n <- 30
+x <- rchisq(n, df=1)
+```
+A natural estimator is $(1/n) \sum_{i=1}^n \sqrt{X}_i$:
+```{r ex2.1}
+(t0 <- mean(sqrt(x)))
+```
+We now use 5000 bootstrap samples to estimate the 
+distribution of $(1/n) \sum_{i=1}^n \sqrt{X}_i$:
+```{r ex2.2}
+M <- 5000
+rho <- vector('numeric', M)
+for(j in 1:M) {
+  bb <- sample.int(n, repl=TRUE)
+  rho[j] <- mean(sqrt(x[bb]))
+}
+```
+We can now use the estimated quantiles to build an
+approximate 95\% confidence interval:
+```{r ex2.3}
+lo0 <- t0 - quantile(rho - t0, .975)
+up0 <- t0 - quantile(rho - t0, .025)
+as.numeric(c(lo=lo0, up=up0))
+```
+
+Can you think of another method to build an
+approximate CI for $E[ \sqrt{X} ]$? 
 
 
+### Example 3 -  Mean of a ratio of dependent variables 
 
+We generate a small sample of correlated variables
+$X$ and $Y$:
+```{r ex3}
+set.seed(123)
+n <- 30
+la <- rchisq(n, df=1) - 1
+x <- rexp(n, rate=1) + la
+y <- runif(n, min=2, max=3) + la
+```
+We are interested in $E[ X/Y ]$. Note that $P( Y > 0 ) = 1$. 
+A natural point estimator is
+```{r ex3.1}
+(t0 <- mean(x/y))
+```
+Use bootstrap to estimate quantiles of the
+statistic of interest
+```{r ex3.2}
+M <- 5000
+rho <- vector('numeric', M)
+for(j in 1:M) {
+  bb <- sample.int(n, repl=TRUE)
+  rho[j] <- mean(x[bb]/y[bb])
+}
+```
+We can use $E^*[ X/Y ]$ as an estimator for
+$E[ X/ Y]$ and thus an estimator of the bias
+is
+```{r ex3.3}
+mean(rho) - t0 
+```
+and an estimator of the variance of 
+$(1/n) \sum_{i=1}^n X_i/Y_i$
+```{r ex3.4}
+var(rho)
+```
+We can now use the estimated quantiles to build an
+approximate 95\% confidence interval:
+```{r ex2.3}
+lo0 <- t0 - quantile(rho - t0, .975)
+up0 <- t0 - quantile(rho - t0, .025)
+as.numeric(c(lo=lo0, up=up0))
+```
+
+These are simple quantile CI's. 
+
+Better (bias corrected) quantile estimators:
 
 <!-- M <- 1000 -->
 <!-- lev5 <- lev4 <- lev3 <- lev2 <- lev <- 0 -->
