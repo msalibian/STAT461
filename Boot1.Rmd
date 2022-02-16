@@ -4,6 +4,9 @@ date: "`r format(Sys.Date())`"
 output: github_document
 ---
 
+
+<!-- notedown --nomagic Boot1.Rmd > Boot1.ipyn -->
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```

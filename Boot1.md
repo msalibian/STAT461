@@ -2,6 +2,8 @@ Bootstrap 1
 ================
 2022-02-16
 
+<!-- notedown --nomagic Boot1.Rmd > Boot1.ipyn -->
+
 # Bootstrap 1
 
 ## A few examples
