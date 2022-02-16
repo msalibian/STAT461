@@ -13,18 +13,246 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Bootstrap 1
 
-### Setup
+### Setting up / running Jupyter notebooks
 
+You have essentially two choices to use this notebook "live":
+ 
 1. Follow the instructions [here](https://jupyter.org/install.html) to install Jupyter on your laptop. You will also need to follow [these instructions](https://www.datacamp.com/community/blog/jupyter-notebook-r) to install the `R kernel` for Jupyter.
 
-2. To run the notebooks on the [syzygy](https://ubc.syzygy.ca/) server. There are Julia, Python 2, Python 3, and R kernels available (although we will only use the R one). Sign in with your UBC CWL. Once you are logged in, use [this link](https://ubc.syzygy.ca/jupyter/user-redirect/git-pull?repo=https://github.com/msalibian/STAT461) to clone this repository (STAT461) (including all notebooks) directly onto your [syzygy](https://ubc.syzygy.ca/) home directory. You  **will** need to do this regularly as the notebooks may (will?) change during the Term.
+2. Or, run the notebooks on the [syzygy](https://ubc.syzygy.ca/) server. There are Julia, Python 2, Python 3, and R kernels available (although we will only use the R one). Sign in with your UBC CWL. Once you are logged in, use [this link](https://ubc.syzygy.ca/jupyter/user-redirect/git-pull?repo=https://github.com/msalibian/STAT461) to clone this repository (STAT461) (including all notebooks) directly onto your [syzygy](https://ubc.syzygy.ca/) home directory. You  **will** need to do this regularly as the notebooks may (will?) change during the Term.
 
 ## A few examples
 
-This generates a sample, and print 1 over the mean
+Here we will use a few simple examples to illustrate the use of
+the bootstrap in practice to construct confidence intervals for
+a  "parameter" of an underlying and uknown distribution. In these
+synthetic examples, we actually do know the true distribution (and thus,
+the value of the parameter of interest), so we will be able to assess
+the level of success of this inferential approach. 
+
+### Example 1 - Estimate the square root of the expected value
+
+Consider a sample $X_1$, \ldots, $X_n$ from an unknown distribution $F$
+with mean $\mu = E_F(X) = \int t dF(t)$. We are interested in
+building an approximate 95\% confidence interval for 
+$$
+\theta = \sqrt{\mu}
+$$
+First, lets generate a sample
 ```{r ex1}
-n <- 20
-set.seed(123)
-x <- rexp(n, rate=2)
-1/mean(x)
+n <- 30
+x <- rexp(n, rate=4)
 ```
+A natural estimator is
+```{r ex1.1}
+( t0 <- sqrt(mean(x)) )
+```
+We now use simulation to approximate the  boo{tstrap estimator
+of the distribution of $\sqrt{ \bar{X}_n}$. 
+```{r ex1.2}
+M <- 5000
+rho <- vector('numeric', M)
+for(j in 1:M) {
+  bb <- sample.int(n, repl=TRUE)
+  # bb <- sample(1:n, repl=TRUE)
+  rho[j] <- sqrt(mean(x[bb]))
+}
+lo0 <- t0 - quantile(rho - t0, .975)
+up0 <- t0 - quantile(rho - t0, .025)
+c(lo=lo0, up=up0)
+# 
+# lo0 <- t0 - (quantile(rho - t0, .975) - t0)
+# up0 <- t0 - (quantile(rho - t0, .025) - t0)
+```
+A CLT-type approximation yields the CI
+```{r ex1.3}
+lo1 <- t0 - qnorm(.975)*sd(x)/2/mean(x)/sqrt(n)
+up1 <- t0 + qnorm(.975)*sd(x)/2/mean(x)/sqrt(n)
+```
+We can compare it with the previous one
+```{r ex1.4}
+( rbind(c(lo=lo0, up=up0),
+      c(lo=lo1, up=up1)) )
+```
+
+
+
+
+
+<!-- M <- 1000 -->
+<!-- lev5 <- lev4 <- lev3 <- lev2 <- lev <- 0 -->
+<!-- len5 <- len4 <- len3 <- len2 <- len <- 0 -->
+<!-- ff <- function(a, x) 1/mean(x[a]) -->
+<!-- n <- 10 -->
+<!-- lambda0 <- 5 -->
+<!-- a <- qnorm(.025) -->
+<!-- b <- qnorm(.975) -->
+
+<!-- for(j in 1:M) { -->
+
+<!--   set.seed(123 + 17*j) -->
+
+<!--   x <- rexp(n, rate=lambda0) -->
+
+<!--   # Estimate quantiles -->
+<!--   B <- 5000 -->
+<!--   bootsam <- matrix(sample.int(n, size=B*n, replace=TRUE), B, n) -->
+
+<!--   tstar <- apply(bootsam, 1, ff, x=x) -->
+
+<!--   t0 <- 1/mean(x) -->
+
+<!--   lo <- t0 - quantile(tstar, .975) + t0 -->
+<!--   up <- t0 - quantile(tstar, .025) + t0 -->
+<!--   if((lambda0 > lo ) & (lambda0 < up) ) lev <- lev + 1 -->
+
+<!--   len <- len + (up - lo) -->
+
+<!--   bootsam <- matrix(rexp(n*B, rate=1/mean(x)), B, n) -->
+
+<!--   tstar <- apply(bootsam, 1, function(a) 1/mean(a)) -->
+
+<!--   lo <- t0 - quantile(tstar, .975) + t0 -->
+<!--   up <- t0 - quantile(tstar, .025) + t0 -->
+<!--   if((lambda0 > lo ) & (lambda0 < up) ) lev2 <- lev2 + 1 -->
+<!--   len2 <- len2 + (up - lo) -->
+
+
+<!--   up <- t0*(1-a/sqrt(n)) -->
+<!--   lo <- t0*(1-b/sqrt(n)) -->
+<!--   if( (lambda0 < up ) & (lambda0 > lo ) ) lev3 <- lev3 + 1 -->
+<!--   len3 <- len3 + (up - lo) -->
+
+<!--   up <-t0*(1+b/sqrt(n)) -->
+<!--   lo <- t0*(1+a/sqrt(n)) -->
+<!--   if( (lambda0 < up ) & (lambda0 > lo ) ) lev4 <- lev4 + 1 -->
+<!--   len4 <- len4 + (up - lo) -->
+
+<!--   up <- (1/t0) - a*sd(x)/sqrt(n) -->
+<!--   lo <- (1/t0) - b*sd(x)/sqrt(n) -->
+<!--   if( (lambda0 < (1/lo) ) & (lambda0 > (1/up) ) ) lev5 <- lev5 + 1 -->
+<!--   len5 <- len5 + (1/lo - 1/up) -->
+
+
+<!--   # print(c(it=j, bnp=lev/j, bp=lev2/j, clt=lev3/j, clt2=lev4/j))   -->
+<!--   print(c(it=j, bnp=len/j, bp=len2/j, clt=len3/j, clt2=len4/j, clt3=len5/j))   -->
+
+<!-- } -->
+
+<!-- print(c(bnp=lev/M, bp=lev2/M, clt=lev3/M, clt2=lev4/M, clt3=lev5/M))   -->
+<!-- print(c(bnp=len/M, bp=len2/M, clt=len3/M, clt2=len4/M, clt3=len5/M))   -->
+
+
+
+<!-- ### CI for a correlation -->
+
+<!-- set.seed(123) -->
+<!-- n <- 30 -->
+<!-- la <- rchisq(n, df=1) - 1 -->
+<!-- x <- rexp(n, rate=1) + la -->
+<!-- y <- runif(n, min=-1, max=1) + la -->
+
+<!-- M <- 5000 -->
+<!-- rho <- vector('numeric', M) -->
+<!-- for(j in 1:M) { -->
+<!--   bb <- sample.int(n, repl=TRUE) -->
+<!--   rho[j] <- cor(x[bb], y[bb]) -->
+<!-- } -->
+
+<!-- t0 <- cor(x, y) -->
+<!-- lo0 <- t0 - (quantile(rho, .975) - t0) -->
+<!-- up0 <- t0 - (quantile(rho, .025) - t0) -->
+
+
+<!-- zz <- log((1+t0)/(1-t0))/2 -->
+<!-- lo <- zz - qnorm(.975)/sqrt(n-3) -->
+<!-- up <- zz + qnorm(.975)/sqrt(n-3) -->
+
+<!-- lo2 <- (exp(2*lo)-1)/(exp(2*lo)+1) -->
+<!-- up2 <- (exp(2*up)-1)/(exp(2*up)+1) -->
+
+<!-- print(c(lo0, up0)) -->
+<!-- print(c(lo2, up2)) -->
+
+
+
+<!-- ## Mean of a ratio of dependent variables -->
+
+
+
+<!-- set.seed(123) -->
+<!-- n <- 30 -->
+<!-- la <- rchisq(n, df=1) - 1 -->
+<!-- x <- rexp(n, rate=1) + la -->
+<!-- y <- runif(n, min=2, max=3) + la -->
+
+<!-- t0 <- mean(x/y) -->
+
+<!-- M <- 5000 -->
+<!-- rho <- vector('numeric', M) -->
+<!-- for(j in 1:M) { -->
+<!--   bb <- sample.int(n, repl=TRUE) -->
+<!--   rho[j] <- mean(x[bb]/y[bb]) -->
+<!-- } -->
+
+<!-- # bias? -->
+<!-- mean(rho) - t0 -->
+
+<!-- # variance -->
+<!-- var(rho) -->
+
+
+<!-- ## mean of sqrt(X^2_1) = |N(0,1)| -->
+<!-- # sigma*sqrt(2/pi)*exp(-mu^2/(2 sigma^2)) + mu(1-2*pnorm(-mu/sigma)) -->
+<!-- # mu=0, sigma=1 -->
+<!-- # sqrt(2/pi) = 0.7978846 -->
+
+<!-- set.seed(123) -->
+<!-- n <- 30 -->
+<!-- x <- rchisq(n, df=1) -->
+
+<!-- t0 <- mean(sqrt(x)) -->
+
+<!-- M <- 5000 -->
+<!-- rho <- vector('numeric', M) -->
+<!-- for(j in 1:M) { -->
+<!--   bb <- sample.int(n, repl=TRUE) -->
+<!--   rho[j] <- mean(sqrt(x[bb])) -->
+<!-- } -->
+
+<!-- lo0 <- t0 - (quantile(rho, .975) - t0) -->
+<!-- up0 <- t0 - (quantile(rho, .025) - t0) -->
+<!-- c(lo=lo0, up=up0) -->
+
+<!-- # an alternative method? -->
+
+<!-- ## sqrt(E(X)) -->
+
+<!-- set.seed(123) -->
+<!-- n <- 30 -->
+<!-- x <- rexp(n, rate=4) -->
+
+<!-- t0 <- sqrt(mean(x)) -->
+
+<!-- M <- 5000 -->
+<!-- rho <- vector('numeric', M) -->
+<!-- for(j in 1:M) { -->
+<!--   bb <- sample.int(n, repl=TRUE) -->
+<!--   rho[j] <- sqrt(mean(x[bb])) -->
+<!-- } -->
+
+<!-- lo0 <- t0 - (quantile(rho, .975) - t0) -->
+<!-- up0 <- t0 - (quantile(rho, .025) - t0) -->
+
+<!-- lo1 <- t0 - qnorm(.975)*sd(x)/2/mean(x)/sqrt(n) -->
+<!-- up1 <- t0 + qnorm(.975)*sd(x)/2/mean(x)/sqrt(n) -->
+<!-- rbind(c(lo=lo0, up=up0), -->
+<!--       c(lo=lo1, up=up1)) -->
+
+
+
+
+
+
+
+
