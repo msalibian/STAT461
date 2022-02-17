@@ -53,7 +53,8 @@ root: $\theta = \sqrt{\mu}$.
 
 Here we first generate a sample of size $n = 30$. 
 ```{r ex1}
-n <- 30
+set.seed(123)
+n <- 10
 x <- rexp(n, rate=4)
 ```
 Note that for these data, $\theta = 1/2$. A natural estimator 
@@ -126,9 +127,12 @@ rbind(c(lo=lo0, up=up0), c(lo=lo4, up=up4))
 Alternatively, we can use the CLT and the "delta" method
 to derive a asymptotic CI which yields:
 ```{r ex1.3}
-lo1 <- t0 - qnorm(.975)*sd(x)/2/mean(x)/sqrt(n)
-up1 <- t0 + qnorm(.975)*sd(x)/2/mean(x)/sqrt(n)
-as.numeric(c(lo=lo1, up=up1))
+lo1 <- t0 - qnorm(.975)*sd(x)/2/sqrt(mean(x))/sqrt(n)
+up1 <- t0 + qnorm(.975)*sd(x)/2/sqrt(mean(x))/sqrt(n)
+lo11 <- t0 - qnorm(.975)*sd(rho)
+up11 <- t0 + qnorm(.975)*sd(rho)
+rbind(c(lo=lo1, up=up1),
+      c(lo=lo11, up=up11))
 ```
 Discuss.
 <!-- We can compare it with the previous one -->
@@ -153,7 +157,7 @@ $\theta = E[ |Z| ] = \sqrt{2/\pi} = 0.7978846$.
 
 As before, first we generate a sample: 
 ```{r ex2}
-set.seed(123456)
+set.seed(123)
 n <- 30
 x <- rchisq(n, df=1)
 ```
@@ -197,7 +201,7 @@ in $\theta = e^\mu$ where $\mu = E(X)$.
 First, lets  generate a small sample:
 ```{r ex3}
 set.seed(123)
-n <- 20
+n <- 15
 x <- rnorm(n)
 ```
 The MLE estimator is $\hat{\theta}_n = e^{\bar{X}_n}$:
