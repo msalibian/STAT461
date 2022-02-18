@@ -3,7 +3,7 @@ title: "Bootstrap 1"
 date: "`r format(Sys.Date())`"
 output:
   html_document:
-    theme: readable
+    theme: lumen
 ---
 
 
@@ -53,8 +53,7 @@ root: $\theta = \sqrt{\mu}$.
 
 Here we first generate a sample of size $n = 30$. 
 ```{r ex1}
-set.seed(123)
-n <- 10
+n <- 30
 x <- rexp(n, rate=4)
 ```
 Note that for these data, $\theta = 1/2$. A natural estimator 
@@ -99,29 +98,29 @@ of doing these calculations, but here I am giving preference to
 transparency over computational efficiency.
 ```{r ex1.2}
 M <- 5000
-rho <- vector('numeric', M)
+th <- vector('numeric', M)
 for(j in 1:M) {
   bb <- sample.int(n, repl=TRUE)
   # bb <- sample(1:n, repl=TRUE)
-  rho[j] <- sqrt(mean(x[bb]))
+  th[j] <- sqrt(mean(x[bb]))
 }
 ```
 We can look at a histogram and boxplot of the recomputed
 estimators. These are bootstrap estimators of the true
 sampling distribution of $\hat{\theta}_n = \sqrt{ \bar{X}_n }$:
 ```{r ex1.21, fig.show="hold", out.width="50%"}
-hist(rho, main=expression(rho))
-boxplot(rho, main=expression(rho))
+hist(th, main=expression(hat(theta)))
+boxplot(th, main=expression(hat(theta)))
 ```
 
 We now use the quantiles from the centered bootstrap 
 distribution to build an approximate 95\% confidence
 interval for $\theta = \sqrt{\mu}$:
 ```{r ex1.25}
-lo0 <- t0 - quantile(rho - t0, .975)
-up0 <- t0 - quantile(rho - t0, .025)
-lo4 <- quantile(rho, .025)
-up4 <- quantile(rho, .975)
+lo0 <- t0 - quantile(th - t0, .975)
+up0 <- t0 - quantile(th - t0, .025)
+lo4 <- quantile(th, .025)
+up4 <- quantile(th, .975)
 rbind(c(lo=lo0, up=up0), c(lo=lo4, up=up4))
 ```
 Alternatively, we can use the CLT and the "delta" method
@@ -129,10 +128,7 @@ to derive a asymptotic CI which yields:
 ```{r ex1.3}
 lo1 <- t0 - qnorm(.975)*sd(x)/2/sqrt(mean(x))/sqrt(n)
 up1 <- t0 + qnorm(.975)*sd(x)/2/sqrt(mean(x))/sqrt(n)
-lo11 <- t0 - qnorm(.975)*sd(rho)
-up11 <- t0 + qnorm(.975)*sd(rho)
-rbind(c(lo=lo1, up=up1),
-      c(lo=lo11, up=up11))
+as.numeric(c(lo=lo1, up=up1))
 ```
 Discuss.
 <!-- We can compare it with the previous one -->
@@ -157,7 +153,7 @@ $\theta = E[ |Z| ] = \sqrt{2/\pi} = 0.7978846$.
 
 As before, first we generate a sample: 
 ```{r ex2}
-set.seed(123)
+set.seed(123456)
 n <- 30
 x <- rchisq(n, df=1)
 ```
@@ -170,10 +166,10 @@ bootstrap samples to estimate the sampling distribution of
 $\hat{\theta}_n = (1/n) \sum_{i=1}^n \sqrt{X}_i$:
 ```{r ex2.2}
 M <- 5000
-rho <- vector('numeric', M)
+th <- vector('numeric', M)
 for(j in 1:M) {
   bb <- sample.int(n, repl=TRUE)
-  rho[j] <- mean(sqrt(x[bb]))
+  th[j] <- mean(sqrt(x[bb]))
 }
 ```
 We now  build an
@@ -181,10 +177,10 @@ approximate 95\% confidence interval for $\theta$
 using the estimated quantiles of the sampling distribution
 of our estimator:
 ```{r ex2.3}
-lo0 <- t0 - quantile(rho - t0, .975)
-up0 <- t0 - quantile(rho - t0, .025)
-lo1 <- quantile(rho, .025)
-up1 <- quantile(rho, .975)
+lo0 <- t0 - quantile(th - t0, .975)
+up0 <- t0 - quantile(th - t0, .025)
+lo1 <- quantile(th, .025)
+up1 <- quantile(th, .975)
 rbind(c(lo=lo0, up=up0), c(lo=lo1, up=up1))
 ```
 
@@ -201,7 +197,7 @@ in $\theta = e^\mu$ where $\mu = E(X)$.
 First, lets  generate a small sample:
 ```{r ex3}
 set.seed(123)
-n <- 15
+n <- 20
 x <- rnorm(n)
 ```
 The MLE estimator is $\hat{\theta}_n = e^{\bar{X}_n}$:
@@ -212,29 +208,29 @@ Use bootstrap to estimate quantiles of the
 statistic of interest
 ```{r ex3.2}
 M <- 5000
-rho <- vector('numeric', M)
+th <- vector('numeric', M)
 for(j in 1:M) {
   bb <- sample.int(n, repl=TRUE)
-  rho[j] <- exp(mean(x[bb]))
+  th[j] <- exp(mean(x[bb]))
 }
 ```
 Now use  the estimated quantiles to build an
 approximate 95\% confidence interval:
 ```{r ex3.5}
-lo1 <- quantile(rho, .025)
-up1 <- quantile(rho, .975)
+lo1 <- quantile(th, .025)
+up1 <- quantile(th, .975)
 c(lo=lo1, up=up1)
 ```
 Compare this with a CLT based CI:
 ```{r ex3.mle}
-c(lo=t0 - qnorm(.975)*sd(rho), 
-  up=t0 + qnorm(.975)*sd(rho))
+c(lo=t0 - qnorm(.975)*sd(th), 
+  up=t0 + qnorm(.975)*sd(th))
 ```
 Note that the distribution of our estimator
 is quite asymmetric:
 ```{r ex3.31, fig.show="hold", out.width="50%"}
-hist(rho, main=expression(rho))
-boxplot(rho, main=expression(rho))
+hist(th, main=expression(hat(theta)))
+boxplot(th, main=expression(hat(theta)))
 ```
 
 So it should not a surprise that these two confidence
@@ -247,15 +243,15 @@ Let us verify this in this example.
 ```{r ex3.10}
 t0 <- mean(x)
 M <- 5000
-rho <- vector('numeric', M)
+th <- vector('numeric', M)
 for(j in 1:M) {
   bb <- sample.int(n, repl=TRUE)
-  rho[j] <- mean(x[bb])
+  th[j] <- mean(x[bb])
 }
-lo1.log <- quantile(rho, .025)
-up1.log <- quantile(rho, .975)
-lo2.log <- t0 - qnorm(.975)*sd(rho)
-up2.log <- t0 + qnorm(.975)*sd(rho)
+lo1.log <- quantile(th, .025)
+up1.log <- quantile(th, .975)
+lo2.log <- t0 - qnorm(.975)*sd(th)
+up2.log <- t0 + qnorm(.975)*sd(th)
 rbind(c(lo=lo1.log, up=up1.log),
       c(lo=lo2.log, up=up2.log))
 ```
@@ -274,3 +270,115 @@ method behaved as if it knew which transformation
 to apply to obtain symmetry, and then transformed
 the quantiles back. We will discuss this further 
 in class. 
+
+### Example 4 - A bivariate example (correlations)
+
+In this example we use the bootstrap to construct a
+confidence interval for the correlation coefficient
+of a pair of random variables $(X, Y)$. 
+
+First, let's generated a random vector $(X, Y)$
+with non-Gaussian marginal distributions and
+non-zero correlation:
+```{r ex4.0}
+set.seed(1717)
+n <- 20
+la <- rchisq(n, df=3)/sqrt(3)
+x <- rexp(n, rate=1) + la
+y <- runif(n, min=-1, max=1) + la
+```
+The correlation estimator is
+```{r ex4.05}
+(t0 <- cor(x, y))
+```
+The true correlation coefficient is 
+$$
+\frac{2}{\sqrt{2 + 1} \sqrt{2 + 4/12}} = 
+\frac{2}{\sqrt{3}\sqrt{7/3}} = 0.7559289
+$$
+For bivariate observations $(X_i, Y_i)$ one
+needs to be careful when bootstraping, that 
+the bootstrap samples respect the pairing. 
+Lets construct a single bootstrapped $\hat{\rho}_n^*$:
+```{r ex4.06}
+bb <- sample.int(n, repl=TRUE)
+cor(x[bb], y[bb])
+```
+Note that the following would be wrong:
+```{r ex4.07}
+bb1 <- sample.int(n, repl=TRUE)
+bb2 <- sample.int(n, repl=TRUE)
+cor(x[bb1], y[bb2])
+```
+Can you explain why the above is incorrect? (Intuitively: the
+bootstrapped $X_i$'s and $Y_i$'s would be uncorrelated 
+with each other, it'd be a good exercise to run a simple
+experiment to see how this
+would look. Note that this is related to "permutation
+tests"). 
+
+We now use 5000 bootstrap samples to estimate
+the sampling distribution of $\hat{\rho}_n$:
+```{r ex4.1}
+M <- 5000
+rho <- vector('numeric', M)
+for(j in 1:M) {
+  bb <- sample.int(n, repl=TRUE)
+  rho[j] <- cor(x[bb], y[bb])
+}
+```
+The distribution estimate is:
+```{r ex4.11, fig.show="hold", out.width="50%"}
+hist(rho, main=expression(hat(rho)))
+boxplot(rho, main=expression(hat(rho)))
+```
+Using the "pseudo-pivot" percentile 
+approach, we get the following 95\% confidence 
+interval:
+```{r ex4.2}
+lo0 <- t0 - (quantile(rho, .975) - t0)
+up0 <- t0 - (quantile(rho, .025) - t0)
+c(lo=lo0, up=up0)
+```
+The simpler percentile bootstrap interval is:
+```{r ex4.21}
+lo1 <- quantile(rho, .025)
+up1 <- quantile(rho, .975)
+c(lo=lo1, up=up1)
+```
+
+Now note that in this example, there is a known transformation
+that makes $\hat{\rho}_n$ approximately
+normal (when $(X, Y)$ is a normal random vector).
+We apply it here to compare the resulting
+confidence interval with the simple bootstrap
+ones. We get:
+```{r ex4.3}
+zz <- log((1+t0)/(1-t0))/2
+lo <- zz - qnorm(.975)/sqrt(n-3)
+up <- zz + qnorm(.975)/sqrt(n-3)
+lo2 <- (exp(2*lo)-1)/(exp(2*lo)+1)
+up2 <- (exp(2*up)-1)/(exp(2*up)+1)
+```
+```{r ex4.4}
+rbind(ppivot=c(lo=lo0, up=up0),
+      perc=c(lo=lo1, up=up1),
+      normal=c(lo=lo2, up=up2))
+```
+
+An approach that may work better is to apply a bias correction. 
+The idea is to consider the possibility that the 
+sampling distribution may not be centered at the 
+parameter of interest. We will discuss this briefly in 
+class. Note that in this case 
+```{r ex4.5}
+tmp <- mean(rho <= t0)
+alph <- pnorm(qnorm(.025) + 2*qnorm(tmp))
+lo3 <- quantile(rho, alph)
+up3 <- quantile(rho, 1-alph)
+rbind(ppivot=c(lo0, up0),
+      perc=c(lo1, up1),
+      normal=c(lo2, up2),
+      bc=c(lo3, up3))
+```
+
